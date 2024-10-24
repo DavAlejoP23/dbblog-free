@@ -59,6 +59,12 @@ class AdminDbBlogPostController extends ModuleAdminController
                 'callback' => 'cleanHtml',
                 'width' => 500,
             ),
+            'data_publish' => array(
+                'title' => $this->trans('Fecha de Publicación', array(), 'Admin.Global'),
+                'type' => 'date',
+                'align' => 'center',
+                'width' => 100,
+            ),
             'featured' => array(
                 'title' => 'Destacado',
                 'active' => 'featured',
@@ -171,6 +177,7 @@ class AdminDbBlogPostController extends ModuleAdminController
             $this->fields_value = array(
                 'image_old' => $obj->image[1],
                 'category_post[]' => $categories_selected,
+                'data_publish' => $obj->data_publish,
             );
         } else {
             $this->fields_value = array(
@@ -216,6 +223,14 @@ class AdminDbBlogPostController extends ModuleAdminController
                         'query' => $categories,
                         'name' => 'title'
                     )
+                ),
+
+                array(
+                    'type' => 'date',
+                    'label' => $this->l('Fecha de Publicación'),
+                    'name' => 'data_publish',
+                    'required' => false,
+                    'desc' => $this->l('Fecha en la que el post será publicado.'),
                 ),
 
                 array(
@@ -366,6 +381,14 @@ class AdminDbBlogPostController extends ModuleAdminController
         $object = parent::processAdd();
 
         if ($object->id > 0) {
+
+            // Actualizamos la fecha de publicación si está disponible
+            $data_publish = Tools::getValue('data_publish');
+            if (!empty($data_publish)) {
+                $object->data_publish = $data_publish;
+                $object->update();
+            }
+
             // Imagen
             if (isset($_FILES['image']) && $_FILES['image']['size'] > 0) {
                 $image_name = $this->saveImg($object);
@@ -391,6 +414,14 @@ class AdminDbBlogPostController extends ModuleAdminController
         $object = parent::processUpdate();
 
         if ($object != false && $object->id_dbblog_post > 0) {
+
+            // Actualizamos la fecha de publicación si está disponible
+            $data_publish = Tools::getValue('data_publish');
+            if (!empty($data_publish)) {
+                $object->data_publish = $data_publish;
+                $object->update();
+            }
+
             // Imagen
             $image_name = $this->saveImg($object);
             $object->image = $image_name;

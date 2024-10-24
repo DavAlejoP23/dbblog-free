@@ -12,6 +12,7 @@ class DbBlogPost extends ObjectModel
     public $views = 0;
     public $active = 1;
     public $index = 1;
+    public $data_publish;
     
     public $title;
     public $short_desc;
@@ -36,6 +37,7 @@ class DbBlogPost extends ObjectModel
             'featured' =>		        array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'views' =>		            array('type' => self::TYPE_INT, 'validate' => 'isunsignedInt'),
             'index' =>			        array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'data_publish' =>	        array('type' => self::TYPE_DATE, 'validate' => 'isDateFormat'),
             'date_add' =>		        array('type' => self::TYPE_DATE),
             'date_upd' =>		        array('type' => self::TYPE_DATE),
             
@@ -162,17 +164,19 @@ class DbBlogPost extends ObjectModel
     {
         $id_shop = (int)Context::getContext()->shop->id;
         $sql = "SELECT p.*, pl.*, cl.title as title_category, cl.link_rewrite as link_category
-            FROM "._DB_PREFIX_."dbblog_post p
-            INNER JOIN "._DB_PREFIX_."dbblog_post_lang pl 
-                ON p.id_dbblog_post = pl.id_dbblog_post 
-                    AND pl.id_lang = '$id_lang' AND pl.id_shop = '$id_shop'
-            INNER JOIN "._DB_PREFIX_."dbblog_category_lang cl 
-                ON p.id_dbblog_category = cl.id_dbblog_category
-                    AND cl.id_lang = '$id_lang' AND cl.id_shop = '$id_shop'
-            WHERE p.active = 1 AND p.author = '$id_dbblog_author' AND p.id_dbblog_post != '$id_post'
-            GROUP BY p.id_dbblog_post
-            ORDER BY p.views DESC
-            LIMIT ".$limit;
+        FROM " . _DB_PREFIX_ . "dbblog_post p
+        INNER JOIN " . _DB_PREFIX_ . "dbblog_post_lang pl 
+            ON p.id_dbblog_post = pl.id_dbblog_post 
+                AND pl.id_lang = '$id_lang' AND pl.id_shop = '$id_shop'
+        INNER JOIN " . _DB_PREFIX_ . "dbblog_category_lang cl 
+            ON p.id_dbblog_category = cl.id_dbblog_category
+                AND cl.id_lang = '$id_lang' AND cl.id_shop = '$id_shop'
+        WHERE p.active = 1 AND p.author = '$id_dbblog_author' 
+            AND p.id_dbblog_post != '$id_post'
+            AND p.data_publish <= NOW()
+        GROUP BY p.id_dbblog_post
+        ORDER BY p.views DESC
+        LIMIT " . $limit;
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
         $posts = array();
@@ -221,7 +225,7 @@ class DbBlogPost extends ObjectModel
             INNER JOIN "._DB_PREFIX_."dbblog_category_lang cl 
                 ON p.id_dbblog_category = cl.id_dbblog_category
                     AND cl.id_lang = '$id_lang' AND cl.id_shop = '$id_shop'
-            WHERE p.active = 1 AND p.featured = 1
+            WHERE p.active = 1 AND p.featured = 1 AND p.data_publish <= NOW()
             GROUP BY p.id_dbblog_post
             ORDER BY views DESC
             LIMIT ".$limit;
@@ -318,10 +322,10 @@ class DbBlogPost extends ObjectModel
 
 
         $sql = "SELECT DISTINCT COUNT(p.id_dbblog_post) as total
-                FROM "._DB_PREFIX_."dbblog_post p 
-                INNER JOIN "._DB_PREFIX_."dbblog_post_lang pl 
-                    ON p.id_dbblog_post = pl.id_dbblog_post AND pl.id_lang = '$id_lang' AND pl.id_shop = '$id_shop'
-                WHERE p.active = 1";
+            FROM " . _DB_PREFIX_ . "dbblog_post p 
+            INNER JOIN " . _DB_PREFIX_ . "dbblog_post_lang pl 
+                ON p.id_dbblog_post = pl.id_dbblog_post AND pl.id_lang = '$id_lang' AND pl.id_shop = '$id_shop'
+            WHERE p.active = 1 AND p.data_publish <= NOW()";
 
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
 
@@ -340,15 +344,15 @@ class DbBlogPost extends ObjectModel
         $offset = $page * $limit;
 
         $sql = "SELECT p.*, pl.*, cl.title as title_category, cl.link_rewrite as link_category
-                FROM " . _DB_PREFIX_ . "dbblog_post p
-                INNER JOIN " . _DB_PREFIX_ . "dbblog_post_lang pl 
-                    ON p.id_dbblog_post = pl.id_dbblog_post AND pl.id_lang = '$id_lang' AND pl.id_shop = '$id_shop'
-                INNER JOIN " . _DB_PREFIX_ . "dbblog_category_lang cl 
-                    ON p.id_dbblog_category = cl.id_dbblog_category AND pl.id_lang = '$id_lang' AND cl.id_shop = '$id_shop'
-                WHERE p.active = 1
-                GROUP BY p.id_dbblog_post
-                ORDER BY p.date_add DESC
-                LIMIT " . $offset . "," . $limit;
+            FROM " . _DB_PREFIX_ . "dbblog_post p
+            INNER JOIN " . _DB_PREFIX_ . "dbblog_post_lang pl 
+                ON p.id_dbblog_post = pl.id_dbblog_post AND pl.id_lang = '$id_lang' AND pl.id_shop = '$id_shop'
+            INNER JOIN " . _DB_PREFIX_ . "dbblog_category_lang cl 
+                ON p.id_dbblog_category = cl.id_dbblog_category AND pl.id_lang = '$id_lang' AND cl.id_shop = '$id_shop'
+            WHERE p.active = 1 AND p.data_publish <= NOW()
+            GROUP BY p.id_dbblog_post
+            ORDER BY p.date_add DESC
+            LIMIT " . $offset . "," . $limit;
 
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 

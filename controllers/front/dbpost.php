@@ -35,7 +35,7 @@ class DbblogDbPostModuleFrontController extends ModuleFrontController
         $desc = $this->module->shortCodes($post['large_desc']);
 
         // Redireccionamos a 404
-        if((int)$post['id'] == 0 || $post['active'] == 0){
+        if ((int)$post['id'] == 0 || $post['active'] == 0 || strtotime($post['data_publish']) > time()) {
             Tools::redirect('index.php?controller=404');
         }
 

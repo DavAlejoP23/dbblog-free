@@ -41,11 +41,11 @@ class DbblogDbHomeModuleFrontController extends ModuleFrontController
         $posts_per_home = Configuration::get('DBBLOG_POSTS_PER_HOME');
         $pagination = 1;
 
-        if($total_posts <= $posts_per_home){
+        if ($total_posts <= $posts_per_home) {
             $pagination = 0;
             $posts_per_home = $total_posts;
         }
-        if($total_posts > 0) {
+        if ($total_posts > 0) {
             $percent_view = round($posts_per_home * 100 / $total_posts, 0);
         } else {
             $percent_view = 100;
@@ -77,20 +77,20 @@ class DbblogDbHomeModuleFrontController extends ModuleFrontController
         $more_views = DbBlogCategory::getPostsViews($id_lang, NULL, NULL, NULL, Configuration::get('DBBLOG_SIDEBAR_VIEWS'));
 
         // Ultimos Sidebar
-//        $last_posts = DbBlogCategory::getPostsLast($id_lang, NULL, NULL, NULL, Configuration::get('DBBLOG_SIDEBAR_LAST'));
+        // $last_posts = DbBlogCategory::getPostsLast($id_lang, NULL, NULL, NULL, Configuration::get('DBBLOG_SIDEBAR_LAST'));
         $last_posts_home = DbBlogCategory::getPostsLast($id_lang, NULL, NULL, NULL, Configuration::get('DBBLOG_POSTS_PER_HOME'));
 
         $json_ld = $this->module->generateBreadcrumbJsonld($this->getBreadcrumbLinks());
 
         $this->context->smarty->assign(array(
             'title_blog'    => $title_blog,
-            'categories'    => $categories,
-            'isHome'        => 1,
-            'isCategory'    => 0,
-            'isAuthors'     => 0,
-            'isAuthor'      => 0,
-            'isPost'        => 0,
-            'json_ld'       => $json_ld,
+        'categories'    => $categories,
+        'isHome'        => 1,
+        'isCategory'    => 0,
+        'isAuthors'     => 0,
+        'isAuthor'      => 0,
+        'isPost'        => 0,
+        'json_ld'       => $json_ld,
 
             'short_desc'    => $short_desc,
             'large_desc'    => $large_desc,
